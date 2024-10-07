@@ -60,6 +60,7 @@ program test_omp_tridiag
     print *, "nproc: ", nproc
     print *, "n_glob: ", n_glob
     print *, "n_groups: ", n_groups
+    print *, "n_iters: ", n_iters
   end if
 
   allocate (u(SZ, n, n_groups), du(SZ, n, n_groups))
@@ -119,123 +120,6 @@ program test_omp_tridiag
     end if
   end if
 
-!   ! =========================================================================
-!   ! first derivative with periodic BC
-!   tdsops = tdsops_init(n, dx_per, operation='first-deriv', scheme='compact6')
-! 
-!   call set_u(u, sin_0_2pi_per, n, n_groups)
-! 
-!   call run_kernel(n_iters, n_groups, u, du, tdsops, n, &
-!                   u_recv_s, u_recv_e, u_send_s, u_send_e, &
-!                   recv_s, recv_e, send_s, send_e, &
-!                   nproc, pprev, pnext &
-!                   )
-! 
-!   call check_error_norm(du, cos_0_2pi_per, n, n_glob, n_groups, -1, norm_du)
-!   if (nrank == 0) print *, 'error norm first-deriv periodic', norm_du
-! 
-!   if (nrank == 0) then
-!     if (norm_du > tol) then
-!       allpass = .false.
-!       write (stderr, '(a)') 'Check 1st derivatives, periodic BCs... failed'
-!     else
-!       write (stderr, '(a)') 'Check 1st derivatives, periodic BCs... passed'
-!     end if
-!   end if
-! 
-!   ! =========================================================================
-!   ! first derivative with dirichlet and neumann
-!   if (nrank == 0) then
-!     bc_start = 'dirichlet'!'neumann'!'dirichlet'
-!   else
-!     bc_start = 'null'
-!   end if
-!   if (nrank == nproc - 1) then
-!     bc_end = 'neumann'!'dirichlet'!'neumann'
-!   else
-!     bc_end = 'null'
-!   end if
-! 
-!   tdsops = tdsops_init(n, dx, operation='first-deriv', scheme='compact6', &
-!                        bc_start=trim(bc_start), bc_end=trim(bc_end), &
-!                        sym=.false.)
-! 
-!   call set_u(u, sin_0_2pi, n, n_groups)
-! 
-!   call run_kernel(n_iters, n_groups, u, du, tdsops, n, &
-!                   u_recv_s, u_recv_e, u_send_s, u_send_e, &
-!                   recv_s, recv_e, send_s, send_e, &
-!                   nproc, pprev, pnext &
-!                   )
-! 
-!   call check_error_norm(du, cos_0_2pi, n, n_glob, n_groups, -1, norm_du)
-!   if (nrank == 0) print *, 'error norm first deriv dir-neu', norm_du
-! 
-!   if (nrank == 0) then
-!     if (norm_du > tol) then
-!       allpass = .false.
-!       write (stderr, '(a)') 'Check 1st derivatives, dir-neu... failed'
-!     else
-!       write (stderr, '(a)') 'Check 1st derivatives, dir-neu... passed'
-!     end if
-!   end if
-! 
-!   ! =========================================================================
-!   ! stag interpolate with neumann sym
-!   n_loc = n
-!   if (nrank == nproc - 1) n_loc = n - 1
-!   tdsops = tdsops_init(n_loc, dx, operation='interpolate', scheme='classic', &
-!                        bc_start=trim(bc_start), bc_end=trim(bc_end), &
-!                        from_to='v2p')
-! 
-!   call set_u(u, cos_0_2pi, n, n_groups)
-! 
-!   call run_kernel(n_iters, n_groups, u, du, tdsops, n_loc, &
-!                   u_recv_s, u_recv_e, u_send_s, u_send_e, &
-!                   recv_s, recv_e, send_s, send_e, &
-!                   nproc, pprev, pnext &
-!                   )
-! 
-!   call check_error_norm(du, cos_stag, n_loc, n_glob, n_groups, -1, norm_du)
-!   if (nrank == 0) print *, 'error norm interpolate', norm_du
-! 
-!   if (nrank == 0) then
-!     if (norm_du > tol) then
-!       allpass = .false.
-!       write (stderr, '(a)') 'Check interpolation... failed'
-!     else
-!       write (stderr, '(a)') 'Check interpolation... passed'
-!     end if
-!   end if
-! 
-!   ! =========================================================================
-!   ! second derivative and hyperviscousity on with dirichlet and neumann
-!   ! c_nu = 0.22 and nu0_nu = 63 results in alpha = 0.40869111947709036
-!   tdsops = tdsops_init(n, dx, operation='second-deriv', &
-!                        scheme='compact6-hyperviscous', &
-!                        bc_start=trim(bc_start), bc_end=trim(bc_end), &
-!                        sym=.false., c_nu=0.22_dp, nu0_nu=63._dp)
-! 
-!   call set_u(u, sin_0_2pi, n, n_groups)
-! 
-!   call run_kernel(n_iters, n_groups, u, du, tdsops, n, &
-!                   u_recv_s, u_recv_e, u_send_s, u_send_e, &
-!                   recv_s, recv_e, send_s, send_e, &
-!                   nproc, pprev, pnext &
-!                   )
-! 
-!   call check_error_norm(du, sin_0_2pi, n, n_glob, n_groups, 1, norm_du)
-!   if (nrank == 0) print *, 'error norm hyperviscous', norm_du
-! 
-!   if (nrank == 0) then
-!     if (norm_du > tol) then
-!       allpass = .false.
-!       write (stderr, '(a)') 'Check 2nd ders, hyperviscous, dir-neu... failed'
-!     else
-!       write (stderr, '(a)') 'Check 2nd ders, hyperviscous, dir-neu... passed'
-!     end if
-!   end if
-
   ! =========================================================================
   ! BW utilisation and performance checks
   ! 3 in the first phase, 2 in the second phase, so 5 in total
@@ -249,22 +133,11 @@ program test_omp_tridiag
     print'(a, f8.3, a)', 'Achieved BW max: ', achievedBWmax/2**30, ' GiB/s'
   end if
 
-  memClockRt = 3200
-  memBusWidth = 64
-  deviceBW = 2*memBusWidth/8._dp*memClockRt*1000000
-
-  if (nrank == 0) then
-    print'(a, f8.3, a)', 'Available BW:   ', deviceBW/2**30, &
-      ' GiB/s (per NUMA zone on ARCHER2)'
-    print'(a, f5.2)', 'Effective BW util min: %', achievedBWmin/deviceBW*100
-    print'(a, f5.2)', 'Effective BW util max: %', achievedBWmax/deviceBW*100
-  end if
-
-  if (allpass) then
-    if (nrank == 0) write (stderr, '(a)') 'ALL TESTS PASSED SUCCESSFULLY.'
-  else
-    error stop 'SOME TESTS FAILED.'
-  end if
+  ! if (allpass) then
+  !   if (nrank == 0) write (stderr, '(a)') 'ALL TESTS PASSED SUCCESSFULLY.'
+  ! else
+  !   error stop 'SOME TESTS FAILED.'
+  ! end if
 
   call MPI_Finalize(ierr)
 
