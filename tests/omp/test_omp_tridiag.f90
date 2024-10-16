@@ -51,16 +51,33 @@ program test_omp_tridiag
   pnext = modulo(nrank - nproc + 1, nproc)
   pprev = modulo(nrank - 1, nproc)
 
-  n_glob = 2048*nproc/2
+
+  ! Weak scaling
+  ! n_glob = 2048*2*nproc/2
+  ! n = n_glob/nproc
+  ! n_groups = 2048*2848/SZ
+  ! n_iters = 200
+
+  ! Strong scaling
+  if (nproc == 120) then
+    n_glob = 64560
+  else
+    if (nproc == 96) then
+      n_glob = 4032*16
+    else
+      n_glob = 2048*2*16
+    end if
+  end if
   n = n_glob/nproc
-  n_groups = 2048*2048/SZ
-  !n_groups = 2048*1024/SZ
-  n_iters = 100
+  n_groups = 2048*2848/SZ
+  n_iters = 400
+
   if (nrank == 0) then
     print *, "nproc: ", nproc
     print *, "n_glob: ", n_glob
     print *, "n_groups: ", n_groups
     print *, "n_iters: ", n_iters
+    print*, 'memuse per node [GiB]', 2.00d0*n*n_groups*SZ*8/1024/1024/1024
   end if
 
   allocate (u(SZ, n, n_groups), du(SZ, n, n_groups))

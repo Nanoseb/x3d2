@@ -26,14 +26,16 @@ program test_thom
   allpass = .true.
   
   !! Performance test
-  ! n_glob = 512
-  ! n_groups = 512 * 512 / SZ
-  ! n_iters = 1000
+  n_glob = 512
+  n_groups = 512 * 512 / SZ
+  n_iters = 1000
+  print *, "n_glob: ", n_glob
+  print *, "n_groups: ", n_groups
 
   !! Verification test
-  n_glob = 1024
-  n_groups = 64 * 64 / SZ
-  n_iters = 1
+  ! n_glob = 1024
+  ! n_groups = 64 * 64 / SZ
+  ! n_iters = 1
 
   n = n_glob
   ndof = n_glob * n_groups * SZ
