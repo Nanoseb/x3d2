@@ -25,6 +25,8 @@ function(define_test testfile np backend)
 
 endfunction()
 
+define_test(omp/test_thom_bench.f90 1 omp)
+define_test(omp/test_omp_tridiag_bench.f90 1 omp)
 define_test(test_allocator.f90 1 omp)
 define_test(test_mesh.f90 4 omp)
 define_test(test_reordering.f90 1 omp)
